@@ -1,48 +1,91 @@
+# Dossier de Conception - TCG Arena
+
+## 1. Diagramme de Classes UML (Logique Métier)
+
+Ce diagramme modélise les entités du jeu, leurs propriétés techniques et les méthodes nécessaires au fonctionnement du MVP.
+
+```mermaid
 classDiagram
-    class User {
-        +UUID id
-        +String username
+    class Utilisateur {
+        +UUID id_utilisateur
+        +String pseudo
         +String email
+        +String mot_de_passe
         +Int credits
-        +Int level
-        +register()
-        +login()
-        +openBooster()
+        +Int niveau
+        +DateTime date_inscription
+        +sInscrire(email, pseudo, mdp)
+        +seConnecter(email, mdp)
+        +modifierProfil(pseudo, avatar)
+        +acheterBooster()
     }
 
-    class Card {
-        +UUID id
-        +String name
-        +Enum faction
+    class Carte {
+        +UUID id_carte
+        +String nom
+        +Int pv_max
+        +Int stade_evolution
         +Int manaCost
         +Int attack
         +Int defense
-        +Enum rarity
-        +String specialEffect
+        +Enum rarete
+        +String image_url
+        +getDetails()
     }
 
-    class UserCard {
-        +UUID userId
-        +UUID cardId
-        +Int quantity
+    class Type {
+        +Int id_type
+        +String libelle
+        +String couleur_hex
+    }
+
+    class Collection {
+        +Int quantite
+        +ajouterCarte(id_carte)
+        +retirerCarte(id_carte)
     }
 
     class Deck {
-        +UUID id
-        +String name
-        +UUID userId
-        +isValid() bool
-        +getStats()
+        +UUID id_deck
+        +String nom_deck
+        +DateTime date_creation
+        +validerRegles() Boolean
+        +calculerStats() Object
+        +ajouterCarte(id_carte)
+        +supprimerCarte(id_carte)
     }
 
-    class DeckCard {
-        +UUID deckId
-        +UUID cardId
-        +Int count
+    class Composition_Deck {
+        +Int quantite_carte
     }
 
-    User "1" -- "0..*" Deck : creates
-    User "1" -- "0..*" UserCard : owns
-    UserCard "*" -- "1" Card : references
-    Deck "1" -- "1..*" DeckCard : contains
-    DeckCard "*" -- "1" Card : refers to
+    class Attaque {
+        +UUID id_attaque
+        +String nom_attaque
+        +Int degats_base
+        +Int cout_energie
+    }
+
+    class Effet {
+        +UUID id_effet
+        +String nom
+        +String code_logique
+        +Int valeur
+        +String cible
+    }
+
+    class ServiceBooster {
+        <<service>>
+        +ouvrirBooster() Card[]
+        +calculerProbabilite(rarete) Float
+    }
+
+    %% Relations
+    Utilisateur "1" -- "0..*" Deck : Crée
+    Utilisateur "1" -- "0..*" Collection : Possède
+    Collection "0..*" -- "1" Carte : Référence
+    Deck "1" -- "0..*" Composition_Deck : Dispose de
+    Composition_Deck "0..*" -- "1" Carte : Inclut
+    Carte "*" -- "1" Type : Appartient à
+    Carte "1" -- "1..*" Attaque : Déclenche
+    Attaque "1" -- "0..*" Effet : Applique
